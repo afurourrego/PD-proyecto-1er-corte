@@ -24,7 +24,6 @@ def aceptar_conexiones():
     while True:
         cliente_local, direccion_cliente = servidor.accept()
         print("%s:%s conectado. "% direccion_cliente)
-        # cliente_local.send(bytes("Bienvenido, ingresa tu nombre y presiona Enter", "utf-8"))
         direcciones[cliente_local] = direccion_cliente
         Thread(target=encargarse_cliente,args=(cliente_local,)).start()
 
@@ -67,35 +66,6 @@ def encargarse_cliente(cliente):
             result = DB.SELECT_USERS()
             data_string = pickle.dumps(result)
             cliente.send(data_string)
-
-        # nombre = cliente.recv(1024).decode("utf-8")
-        # bienvenido = "Bienvenido %s! si quieres salir, escribe {salir}." %nombre
-        # cliente.send(bytes(bienvenido, "utf-8"))
-        # mensaje = "%s se ha unido al chat." % nombre
-        # broadcast(bytes(mensaje, "utf-8"))
-        # clientes[cliente] = nombre
-        # while True:
-        #     mensaje = cliente.recv(1024)
-        #     if mensaje != bytes("{salir}", "utf-8"):
-        #         # guardar_mensaje(nombre, mensaje)
-        #         broadcast(mensaje, nombre+": ")
-        #     else:
-        #         del clientes[cliente]
-        #         broadcast(bytes("%s ha salido del chat." % nombre, "utf-8"))
-        #         break
-
-def broadcast(mensaje, prefix=""):
-    for sock in clientes:
-        sock.send(bytes(prefix, "utf-8")+mensaje)
-
-def guardar_mensaje(nombre,mensaje):
-    conexion = mysql.connector.connect(user="root", password="", host="localhost", database="chat")
-    cursor = conexion.cursor()
-    sql = "INSERT INTO comunicaciones(usuario, mensaje)VALUES(%s,%s)"
-    parametros = (str(nombre), str(mensaje))
-    cursor.execute(sql,parametros)
-    conexion.commit()
-    conexion.close
 
 if __name__ == "__main__":
     configuracion()
