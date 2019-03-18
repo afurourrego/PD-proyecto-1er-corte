@@ -145,7 +145,7 @@ def Home():
         menubar.add_command(label="Usuarios", command=manage_users)
 
     if user_data[1] == "inventario" or user_data[1] == "administrador":
-        menubar.add_command(label="Inventario")
+        menubar.add_command(label="Inventario", command=manage_inventario)
 
     if user_data[1] == "cajero" or user_data[1] == "administrador":
         menubar.add_command(label="Caja")
@@ -263,21 +263,21 @@ def users_formulario():
     users_header = Frame(users_form, width=600, bd=0, relief=SOLID)
     users_header.pack(side=TOP, fill=X)
 
+    label_users_header = Label(users_header, text="USUARIOS", font=('arial', 18), width=600)
+    label_users_header.pack(fill=X)
+
     users_menu_left = Frame(users_form, width=600)
     users_menu_left.pack(side=LEFT, fill=Y)
 
     box_users_list = Frame(users_form, width=600)
     box_users_list.pack(side=RIGHT)
 
-    label_users_header = Label(users_header, text="USUARIOS", font=('arial', 18), width=600)
-    label_users_header.pack(fill=X)
-
     label_user_search = Label(users_menu_left, text="Buscar", font=('arial', 12))
     label_user_search.pack(side=TOP, padx=27, anchor=W)
     search = Entry(users_menu_left, textvariable=SEARCH, font=('arial', 12), width=10)
     search.pack(side=TOP, padx=30, fill=X)
 
-    btn_search = Button(users_menu_left, text="Buscar", command= lambda: Search("usuarios"))
+    btn_search = Button(users_menu_left, text="Buscar", command= lambda: search_users("usuarios"))
     btn_search.pack(side=TOP, padx=30, pady=10, fill=X)
 
     btn_reset = Button(users_menu_left, text="Reset", command=Reset)
@@ -317,6 +317,26 @@ def listar_usuarios():
     for user in users_list:
         if user[0] != 1:
             tree.insert('', 'end', values=(user))
+
+def Reset():
+    tree.delete(*tree.get_children())
+    listar_usuarios()
+    SEARCH.set("")
+
+def Delete(filtro):
+    if not tree.selection():
+       print("ERROR")
+    else:
+        result = messagebox.askquestion("info", '¿Esta seguro de eliminar?', icon="warning")
+        if result == 'yes':
+            cliente_socket.send(bytes("eliminar_"+filtro, "utf-8"))
+
+            user_select = tree.focus()
+            content_user = (tree.item(user_select))
+            user_values = content_user['values']
+
+            cliente_socket.send(bytes(str(user_values[0]), "utf-8"))
+            manage_users()
 
 def add_user_form():
     global user_add_screen
@@ -379,9 +399,7 @@ def add_user():
         mensajes_alerta("Registro Exitoso")
         Reset()
 
-#============================funciones generales================================
-
-def Search(filtro):
+def search_users(filtro):
     if SEARCH.get() != "":
         cliente_socket.send(bytes("buscar_"+filtro, "utf-8"))
         tree.delete(*tree.get_children())
@@ -393,9 +411,95 @@ def Search(filtro):
             if user[0] != 1:
                 tree.insert('', 'end', values=(user))
 
+#==============================menu inventario==================================
+
+def manage_inventario():
+    global inventario_form
+    inventario_form = Toplevel()
+    inventario_form.title("INVENTARIO")
+
+    width = 600
+    height = 400
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    inventario_form.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    inventario_form.resizable(0, 0)
+    inventario_formulario()
+
+def inventario_formulario():
+    global tree
+    global SEARCH
+    SEARCH = StringVar()
+
+    inventario_header = Frame(inventario_form, width=600, bd=0, relief=SOLID)
+    inventario_header.pack(side=TOP, fill=X)
+
+    label_inventario_header = Label(inventario_header, text="INVENTARIO", font=('arial', 18), width=600)
+    label_inventario_header.pack(fill=X)
+
+    inventario_menu_left = Frame(inventario_form, width=600)
+    inventario_menu_left.pack(side=LEFT, fill=Y)
+
+    box_inventario_list = Frame(inventario_form, width=600)
+    box_inventario_list.pack(side=RIGHT)
+
+    label_inventario_search = Label(inventario_menu_left, text="Buscar", font=('arial', 12))
+    label_inventario_search.pack(side=TOP, padx=27, anchor=W)
+    search = Entry(inventario_menu_left, textvariable=SEARCH, font=('arial', 12), width=10)
+    search.pack(side=TOP, padx=30, fill=X)
+
+    btn_search = Button(inventario_menu_left, text="Buscar", command= lambda: Search("productos"))
+    btn_search.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_reset = Button(inventario_menu_left, text="Reset", command=Reset)
+    btn_reset.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_add_new = Button(inventario_menu_left, text="Agregar", command=add_producto_form)
+    btn_add_new.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_edit_new = Button(inventario_menu_left, text="Editar", command=edit_producto_form)
+    btn_edit_new.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_delete = Button(inventario_menu_left, text="Eliminar", command= lambda: Delete("producto"))
+    btn_delete.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    scrollbarx = Scrollbar(box_inventario_list, orient=HORIZONTAL)
+    scrollbary = Scrollbar(box_inventario_list, orient=VERTICAL)
+
+    tree = ttk.Treeview(box_inventario_list, columns=("Codigo", "Nombre", "Precio Un.", "Stock"), selectmode="extended", height=100, yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+
+    scrollbary.config(command=tree.yview)
+    scrollbary.pack(side=RIGHT, fill=Y)
+    scrollbarx.config(command=tree.xview)
+    scrollbarx.pack(side=BOTTOM, fill=X)
+
+    tree.heading('Codigo', text="Codigo",anchor=W)
+    tree.heading('Nombre', text="Nombre",anchor=W)
+    tree.heading('Precio Un.', text="Precio Un.",anchor=W)
+    tree.heading('Stock', text="Stock",anchor=W)
+
+    tree.column('#0', stretch=NO, minwidth=0, width=0)
+    tree.column('#1', stretch=NO, minwidth=0, width=60)
+    tree.column('#2', stretch=NO, minwidth=0, width=150)
+    tree.column('#3', stretch=NO, minwidth=0, width=120)
+    tree.column('#4', stretch=NO, minwidth=0, width=60)
+
+    tree.pack()
+    listar_productos()
+
+def listar_productos():
+    cliente_socket.send(bytes("listar_productos", "utf-8"))
+
+    list = cliente_socket.recv(1024)
+    list = pickle.loads(list)
+    for user in list:
+        tree.insert('', 'end', values=(user))
+
 def Reset():
     tree.delete(*tree.get_children())
-    listar_usuarios()
+    listar_productos()
     SEARCH.set("")
 
 def Delete(filtro):
@@ -406,12 +510,85 @@ def Delete(filtro):
         if result == 'yes':
             cliente_socket.send(bytes("eliminar_"+filtro, "utf-8"))
 
-            user_select = tree.focus()
-            content_user = (tree.item(user_select))
-            user_values = content_user['values']
+            select = tree.focus()
+            content_select = (tree.item(select))
+            select_values = content_select['values']
 
-            cliente_socket.send(bytes(str(user_values[0]), "utf-8"))
-            manage_users()
+            cliente_socket.send(bytes(str(select_values[0]), "utf-8"))
+            manage_inventario()
+
+def add_producto_form():
+    global producto_add_screen
+    producto_add_screen = Toplevel(home)
+    producto_add_screen.title("Formulario de Registro")
+
+    width = 300
+    height = 250
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    producto_add_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    producto_add_screen.resizable(0, 0)
+
+    global productoname
+    global precio
+    global stock
+    global productoname_entry
+    global precio_entry
+    global stock_entry
+
+    productoname = StringVar()
+    precio = StringVar()
+    stock = StringVar()
+
+    Label (producto_add_screen, height="2").pack()
+    productoname_label = Label(producto_add_screen, text="Nombre * ")
+    productoname_label.pack()
+    productoname_entry = Entry(producto_add_screen, textvariable=productoname)
+    productoname_entry.pack()
+    precio_label = Label(producto_add_screen, text="Precio * ")
+    precio_label.pack()
+    precio_entry = Entry(producto_add_screen, textvariable=precio)
+    precio_entry.pack()
+    stock_label = Label(producto_add_screen, text="Stock * ")
+    stock_label.pack()
+    stock_entry = Entry(producto_add_screen, textvariable=stock)
+    stock_entry.pack()
+
+    Label (producto_add_screen, height="1").pack()
+    Button(producto_add_screen, text="Crear producto", width=12, height=1, command = add_producto).pack()
+
+def add_producto():
+    producto_new = productoname.get()
+    precio_new = precio.get()
+    stock_new = stock.get()
+
+    cliente_socket.send(bytes("crear_producto", "utf-8"))
+    producto_new_info = [producto_new, precio_new, stock_new]
+    data_string = pickle.dumps(producto_new_info)
+    cliente_socket.send(data_string)
+
+    producto_add_screen.destroy()
+
+    mensajes_alerta("Registro Exitoso")
+    Reset()
+
+
+
+#============================funciones generales================================
+
+def Search(filtro):
+    if SEARCH.get() != "":
+        cliente_socket.send(bytes("buscar_"+filtro, "utf-8"))
+        tree.delete(*tree.get_children())
+        cliente_socket.send(bytes(SEARCH.get(), "utf-8"))
+
+        list = cliente_socket.recv(1024)
+        list = pickle.loads(list)
+        for item in list:
+            if item[0] != 1:
+                tree.insert('', 'end', values=(item))
 
 #=================================menu clientes=================================
 

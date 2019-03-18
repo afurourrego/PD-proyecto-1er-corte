@@ -14,7 +14,7 @@
 # usuario inventario
 #     crear, editar y eliminar productos
 #     agregar existencia de productos
-#     ver listado de productos
+#     ver listado de productos ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     notificaciones cuando un producto tiene poca existencia
 #
 # usuario administrador

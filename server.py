@@ -84,5 +84,29 @@ def encargarse_cliente(cliente):
             user_new = pickle.loads(user_new)
             DB.CREATE_USER(user_new[0], user_new[1], user_new[2])
 
+        if opcion == "listar_productos":
+            print("listar productos")
+            result = DB.SELECT_PRODUCTOS()
+            data_string = pickle.dumps(result)
+            cliente.send(data_string)
+
+        if opcion == "buscar_productos":
+            print("buscar productos")
+            filtro = cliente.recv(1024).decode("utf-8")
+            result = DB.SELECT_PRODUCTOS_FILTER(filtro)
+            data_string = pickle.dumps(result)
+            cliente.send(data_string)
+
+        if opcion == "eliminar_producto":
+            print("eliminar producto")
+            producto_code = cliente.recv(1024).decode("utf-8")
+            DB.DELETE_PRODUCTO(producto_code)
+
+        if opcion == "crear_producto":
+            print("crear producto")
+            producto_new =  cliente.recv(1024)
+            producto_new = pickle.loads(producto_new)
+            DB.CREATE_PRODUCTO(producto_new[0], producto_new[1], producto_new[2])
+
 if __name__ == "__main__":
     configuracion()

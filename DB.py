@@ -82,11 +82,11 @@ def SELECT_USERS_FILTER(filtro):
 
     return result
 
-def DELETE_USER(filtro):
+def DELETE_USER(code):
     conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
     cursor = conexion.cursor()
 
-    cursor.execute("DELETE FROM usuarios WHERE id = "+filtro)
+    cursor.execute("DELETE FROM usuarios WHERE id = "+code)
 
     conexion.commit()
     conexion.close()
@@ -96,6 +96,49 @@ def CREATE_USER(new_user, new_pass, new_level):
     cursor = conexion.cursor()
 
     cursor.execute("INSERT INTO usuarios (name_user, password, level) VALUES('"+new_user+"', '"+new_pass+"', '"+new_level+"')")
+
+    conexion.commit()
+    conexion.close()
+
+def SELECT_PRODUCTOS():
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT * FROM productos")
+    result = cursor.fetchall()
+
+    conexion.commit()
+    conexion.close()
+
+    return result
+
+def SELECT_PRODUCTOS_FILTER(filtro):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT * FROM productos WHERE name_product LIKE '%"+filtro+"%'")
+
+    result = cursor.fetchall()
+
+    conexion.commit()
+    conexion.close()
+
+    return result
+
+def DELETE_PRODUCTO(code):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("DELETE FROM productos WHERE id = "+code)
+
+    conexion.commit()
+    conexion.close()
+
+def CREATE_PRODUCTO(new_producto, new_precio, new_stock):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("INSERT INTO productos (name_product, price, stock) VALUES('"+new_producto+"', '"+new_precio+"', '"+new_stock+"')")
 
     conexion.commit()
     conexion.close()
