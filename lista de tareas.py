@@ -1,5 +1,5 @@
 # usuarios general
-#     registrar clientes ++++++++++++++++++++++++++++++++++++
+#     registrar clientes ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     iniciar sesion ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     cerrar sesion +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     actualizar datos personales y cambiar contraseña ++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -18,7 +18,7 @@
 #     notificaciones cuando un producto tiene poca existencia
 #
 # usuario administrador
-#     crear usuarios de tipo cajeros, inventarios, administrador
-#     ver listado de clientes
+#     crear usuarios de tipo cajeros, inventarios, administrador ++++++++++++++++++++++++++++++++++++++++++++
+#     ver listado de clientes +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     ver ventas por editar
 #     notificaciones cuando un producto tiene poca existencia
