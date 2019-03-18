@@ -2,7 +2,6 @@ from socket import *
 from threading import *
 import pickle
 import DB
-# import mysql.connector
 
 clientes = {}
 direcciones = {}
@@ -35,7 +34,7 @@ def encargarse_cliente(cliente):
             print("login")
             user_info =  cliente.recv(1024)
             user_info = pickle.loads(user_info)
-            result = DB.SEARCH_USER(user_info[0], user_info[1])
+            result = DB.SEARCH_USER_LOGIN(user_info[0], user_info[1])
 
             if result is None:
                 cliente.send(bytes("error", "utf-8"))
@@ -62,10 +61,22 @@ def encargarse_cliente(cliente):
                 DB.UPDATE_USER(user_edit[0], user_edit[1])
 
         if opcion == "listar_usuarios":
-            print("listar usuarioss")
+            print("listar usuarios")
             result = DB.SELECT_USERS()
             data_string = pickle.dumps(result)
             cliente.send(data_string)
+
+        if opcion == "buscar_usuarios":
+            print("buscar usuarios")
+            filtro = cliente.recv(1024).decode("utf-8")
+            result = DB.SELECT_USERS_FILTER(filtro)
+            data_string = pickle.dumps(result)
+            cliente.send(data_string)
+
+        if opcion == "eliminar_usuario":
+            print("eliminar usuario")
+            user_code = cliente.recv(1024).decode("utf-8")
+            DB.DELETE_USER(user_code)
 
 if __name__ == "__main__":
     configuracion()

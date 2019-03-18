@@ -157,6 +157,7 @@ def Home():
     home.config(menu=menubar)
 
 #==================================menu cuenta==================================
+
 def editar_cuenta_formulario():
     global editar_cuenta_screen
     editar_cuenta_screen = Toplevel(home)
@@ -244,9 +245,7 @@ def manage_users():
 
 def users_formulario():
     global tree
-    PRODUCT_NAME = StringVar()
-    PRODUCT_PRICE = IntVar()
-    PRODUCT_QTY = IntVar()
+    global SEARCH
     SEARCH = StringVar()
 
     users_header = Frame(users_form, width=600, bd=0, relief=SOLID)
@@ -266,16 +265,16 @@ def users_formulario():
     search = Entry(users_menu_left, textvariable=SEARCH, font=('arial', 12), width=10)
     search.pack(side=TOP, padx=30, fill=X)
 
-    btn_search = Button(users_menu_left, text="Buscar", command=Search)
+    btn_search = Button(users_menu_left, text="Buscar", command= lambda: Search("usuarios"))
     btn_search.pack(side=TOP, padx=30, pady=10, fill=X)
 
     btn_reset = Button(users_menu_left, text="Reset", command=Reset)
     btn_reset.pack(side=TOP, padx=30, pady=10, fill=X)
 
-    btn_add_new = Button(users_menu_left, text="Agregar", command=AddNew)
+    btn_add_new = Button(users_menu_left, text="Agregar", command=AddNewForm)
     btn_add_new.pack(side=TOP, padx=30, pady=10, fill=X)
 
-    btn_delete = Button(users_menu_left, text="Eliminar", command=Delete)
+    btn_delete = Button(users_menu_left, text="Eliminar", command= lambda: Delete("usuario"))
     btn_delete.pack(side=TOP, padx=30, pady=10, fill=X)
 
     scrollbarx = Scrollbar(box_users_list, orient=HORIZONTAL)
@@ -299,7 +298,6 @@ def users_formulario():
     listar_usuarios()
 
 def listar_usuarios():
-
     cliente_socket.send(bytes("listar_usuarios", "utf-8"))
 
     users_list = cliente_socket.recv(1024)
@@ -308,7 +306,39 @@ def listar_usuarios():
         if user[0] != 1:
             tree.insert('', 'end', values=(user))
 
+def Search(filtro):
+    cliente_socket.send(bytes("buscar_"+filtro, "utf-8"))
+    tree.delete(*tree.get_children())
 
+    cliente_socket.send(bytes(SEARCH.get(), "utf-8"))
+
+    users_list = cliente_socket.recv(1024)
+    users_list = pickle.loads(users_list)
+    for user in users_list:
+        if user[0] != 1:
+            tree.insert('', 'end', values=(user))
+
+def Reset():
+    tree.delete(*tree.get_children())
+    listar_usuarios()
+    SEARCH.set("")
+
+
+
+def Delete(filtro):
+    if not tree.selection():
+       print("ERROR")
+    else:
+        result = messagebox.askquestion("info", '¿Esta seguro de eliminar el usuario?', icon="warning")
+        if result == 'yes':
+            cliente_socket.send(bytes("eliminar_"+filtro, "utf-8"))
+
+            user_select = tree.focus()
+            content_user = (tree.item(user_select))
+            user_values = content_user['values']
+
+            cliente_socket.send(bytes(str(user_values[0]), "utf-8"))
+            manage_users()
 
 #=================================menu clientes=================================
 
@@ -337,7 +367,7 @@ def registrar_cliente_formulario():
     cedula_entry.pack()
 
     Label(register_screen, text="").pack()
-    Button(register_screen, text="Crear usuario", width=10, height=1, command = register_client).pack()
+    Button(register_screen, text="Crear cliente", width=10, height=1, command = register_client).pack()
 
 def register_client():
     client_info = client.get()
