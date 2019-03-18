@@ -12,8 +12,8 @@
 #     cerrar caja (registra la caja con la que termina el dia y no se pueden hacer mas ventas)
 #
 # usuario inventario
-#     crear, editar y eliminar productos
-#     agregar existencia de productos
+#     crear, editar y eliminar productos ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#     agregar existencia de productos +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     ver listado de productos ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     notificaciones cuando un producto tiene poca existencia
 #

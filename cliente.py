@@ -280,7 +280,7 @@ def users_formulario():
     btn_search = Button(users_menu_left, text="Buscar", command= lambda: search_users("usuarios"))
     btn_search.pack(side=TOP, padx=30, pady=10, fill=X)
 
-    btn_reset = Button(users_menu_left, text="Reset", command=Reset)
+    btn_reset = Button(users_menu_left, text="Reset", command=reset_users)
     btn_reset.pack(side=TOP, padx=30, pady=10, fill=X)
 
     btn_add_new = Button(users_menu_left, text="Agregar", command=add_user_form)
@@ -318,7 +318,7 @@ def listar_usuarios():
         if user[0] != 1:
             tree.insert('', 'end', values=(user))
 
-def Reset():
+def reset_users():
     tree.delete(*tree.get_children())
     listar_usuarios()
     SEARCH.set("")
@@ -397,7 +397,7 @@ def add_user():
         user_add_screen.destroy()
 
         mensajes_alerta("Registro Exitoso")
-        Reset()
+        reset_users()
 
 def search_users(filtro):
     if SEARCH.get() != "":
@@ -574,6 +574,78 @@ def add_producto():
     mensajes_alerta("Registro Exitoso")
     Reset()
 
+def edit_producto_form():
+
+    if not tree.selection():
+       print("ERROR")
+    else:
+        global producto_edit_screen
+        producto_edit_screen = Toplevel(home)
+        producto_edit_screen.title("Formulario de Registro")
+
+        width = 300
+        height = 250
+        screen_width = home.winfo_screenwidth()
+        screen_height = home.winfo_screenheight()
+        x = (screen_width/2) - (width/2)
+        y = (screen_height/2) - (height/2)
+        producto_edit_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+        producto_edit_screen.resizable(0, 0)
+
+        global code_producto
+        global productoname
+        global precio
+        global stock
+        global productoname_entry
+        global precio_entry
+        global stock_entry
+
+        code_producto = StringVar()
+        productoname = StringVar()
+        precio = StringVar()
+        stock = StringVar()
+
+        select = tree.focus()
+        content_select = (tree.item(select))
+        select_values = content_select['values']
+
+        code_producto.set(select_values[0])
+        productoname.set(select_values[1])
+        precio.set(select_values[2])
+        stock.set(select_values[3])
+
+        Label (producto_edit_screen, height="2").pack()
+        productoname_label = Label(producto_edit_screen, text="Nombre * ")
+        productoname_label.pack()
+        productoname_entry = Entry(producto_edit_screen, textvariable=productoname)
+        productoname_entry.pack()
+        precio_label = Label(producto_edit_screen, text="Precio * ")
+        precio_label.pack()
+        precio_entry = Entry(producto_edit_screen, textvariable=precio)
+        precio_entry.pack()
+        stock_label = Label(producto_edit_screen, text="Stock * ")
+        stock_label.pack()
+        stock_entry = Entry(producto_edit_screen, textvariable=stock)
+        stock_entry.pack()
+
+        Label (producto_edit_screen, height="1").pack()
+        Button(producto_edit_screen, text="Editar producto", width=12, height=1, command = edit_producto).pack()
+
+def edit_producto():
+    code_producto_edit = code_producto.get()
+    producto_edit = productoname.get()
+    precio_edit = precio.get()
+    stock_edit = stock.get()
+
+    cliente_socket.send(bytes("editar_producto", "utf-8"))
+    producto_new_info = [code_producto_edit, producto_edit, precio_edit, stock_edit]
+    data_string = pickle.dumps(producto_new_info)
+    cliente_socket.send(data_string)
+
+    producto_edit_screen.destroy()
+
+    mensajes_alerta("Registro Exitoso")
+    Reset()
 
 
 #============================funciones generales================================

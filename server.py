@@ -108,5 +108,11 @@ def encargarse_cliente(cliente):
             producto_new = pickle.loads(producto_new)
             DB.CREATE_PRODUCTO(producto_new[0], producto_new[1], producto_new[2])
 
+        if opcion == 'editar_producto':
+            print("editar producto")
+            producto_edit =  cliente.recv(1024)
+            producto_edit = pickle.loads(producto_edit)
+            DB.UPDATE_PRODUCTO(producto_edit[0], producto_edit[1], producto_edit[2], producto_edit[3])
+
 if __name__ == "__main__":
     configuracion()
