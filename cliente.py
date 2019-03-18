@@ -55,12 +55,11 @@ def login_formulario():
 
     global username_verify
     global password_verify
+    global username_login_entry
+    global password_login_entry
 
     username_verify = StringVar()
     password_verify = StringVar()
-
-    global username_login_entry
-    global password_login_entry
 
     Label(login_screen, height="2").pack()
     Label(login_screen, text="Nombre de Usuario * ").pack()
@@ -124,6 +123,7 @@ def Home():
     global home
     home = Tk()
     home.title("El Mercadito")
+
     width = 1024
     height = 520
     screen_width = home.winfo_screenwidth()
@@ -132,6 +132,7 @@ def Home():
     y = (screen_height/2) - (height/2)
     home.geometry("%dx%d+%d+%d" % (width, height, x, y))
     home.resizable(0, 0)
+
     menubar = Menu(home)
 
     menu_cuenta = Menu(menubar, tearoff=0)
@@ -162,6 +163,16 @@ def editar_cuenta_formulario():
     global editar_cuenta_screen
     editar_cuenta_screen = Toplevel(home)
     editar_cuenta_screen.title("Editar usuario")
+
+    width = 300
+    height = 250
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    editar_cuenta_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    editar_cuenta_screen.resizable(0, 0)
+
     editar_cuenta_screen.geometry("300x250")
     editar_cuenta_screen.resizable(0, 0)
 
@@ -233,6 +244,7 @@ def manage_users():
     global users_form
     users_form = Toplevel()
     users_form.title("USUARIOS")
+
     width = 600
     height = 400
     screen_width = home.winfo_screenwidth()
@@ -271,7 +283,7 @@ def users_formulario():
     btn_reset = Button(users_menu_left, text="Reset", command=Reset)
     btn_reset.pack(side=TOP, padx=30, pady=10, fill=X)
 
-    btn_add_new = Button(users_menu_left, text="Agregar", command=AddNewForm)
+    btn_add_new = Button(users_menu_left, text="Agregar", command=add_user_form)
     btn_add_new.pack(side=TOP, padx=30, pady=10, fill=X)
 
     btn_delete = Button(users_menu_left, text="Eliminar", command= lambda: Delete("usuario"))
@@ -306,30 +318,91 @@ def listar_usuarios():
         if user[0] != 1:
             tree.insert('', 'end', values=(user))
 
+def add_user_form():
+    global user_add_screen
+    user_add_screen = Toplevel(home)
+    user_add_screen.title("Formulario de Registro")
+
+    width = 300
+    height = 250
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    user_add_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    user_add_screen.resizable(0, 0)
+
+    global username
+    global password
+    global level
+    global username_entry
+    global password_entry
+
+    username = StringVar()
+    password = StringVar()
+    level = StringVar()
+
+    Label(user_add_screen, height="2").pack()
+    username_label = Label(user_add_screen, text="Nombre * ")
+    username_label.pack()
+    username_entry = Entry(user_add_screen, textvariable=username)
+    username_entry.pack()
+    password_label = Label(user_add_screen, text="Contraseña * ")
+    password_label.pack()
+    password_entry = Entry(user_add_screen, textvariable=password, show="*")
+    password_entry.pack()
+    level1_entry = Radiobutton(user_add_screen, text="administrador", value="administrador", variable=level)
+    level1_entry.place(x=30, y=130)
+    level2_entry = Radiobutton(user_add_screen, text="inventario", value="inventario", variable=level)
+    level2_entry.place(x=130, y=130)
+    level3_entry = Radiobutton(user_add_screen, text="cajero", value="cajero", variable=level)
+    level3_entry.place(x=210, y=130)
+
+    Label(user_add_screen, height="4").pack()
+    Button(user_add_screen, text="Crear usuario", width=10, height=1, command = add_user).pack()
+
+def add_user():
+    user_new = username.get()
+    pass_new = password.get()
+    level_new = level.get()
+
+    if level_new == "":
+        mensajes_alerta("Debe seleccionar un Nivel")
+    else:
+        cliente_socket.send(bytes("crear_usuario", "utf-8"))
+        user_new_info = [user_new, pass_new, level_new]
+        data_string = pickle.dumps(user_new_info)
+        cliente_socket.send(data_string)
+
+        user_add_screen.destroy()
+
+        mensajes_alerta("Registro Exitoso")
+        Reset()
+
+#============================funciones generales================================
+
 def Search(filtro):
-    cliente_socket.send(bytes("buscar_"+filtro, "utf-8"))
-    tree.delete(*tree.get_children())
+    if SEARCH.get() != "":
+        cliente_socket.send(bytes("buscar_"+filtro, "utf-8"))
+        tree.delete(*tree.get_children())
+        cliente_socket.send(bytes(SEARCH.get(), "utf-8"))
 
-    cliente_socket.send(bytes(SEARCH.get(), "utf-8"))
-
-    users_list = cliente_socket.recv(1024)
-    users_list = pickle.loads(users_list)
-    for user in users_list:
-        if user[0] != 1:
-            tree.insert('', 'end', values=(user))
+        users_list = cliente_socket.recv(1024)
+        users_list = pickle.loads(users_list)
+        for user in users_list:
+            if user[0] != 1:
+                tree.insert('', 'end', values=(user))
 
 def Reset():
     tree.delete(*tree.get_children())
     listar_usuarios()
     SEARCH.set("")
 
-
-
 def Delete(filtro):
     if not tree.selection():
        print("ERROR")
     else:
-        result = messagebox.askquestion("info", '¿Esta seguro de eliminar el usuario?', icon="warning")
+        result = messagebox.askquestion("info", '¿Esta seguro de eliminar?', icon="warning")
         if result == 'yes':
             cliente_socket.send(bytes("eliminar_"+filtro, "utf-8"))
 
@@ -346,7 +419,15 @@ def registrar_cliente_formulario():
     global register_screen
     register_screen = Toplevel(home)
     register_screen.title("Formulario de Registro")
-    register_screen.geometry("300x250")
+
+    width = 300
+    height = 250
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    register_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    register_screen.resizable(0, 0)
 
     global client
     global cedula
@@ -394,8 +475,17 @@ def mensajes_alerta(mensaje):
 
     mensaje_alerta_screen = Toplevel(home)
     mensaje_alerta_screen.title("info")
+
+    width = 200
+    height = 100
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    mensaje_alerta_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    mensaje_alerta_screen.resizable(0, 0)
+
     Label(mensaje_alerta_screen, height="1").pack()
-    mensaje_alerta_screen.geometry("200x100")
     Label(mensaje_alerta_screen, textvariable=mensaje_alert).pack()
     Button(mensaje_alerta_screen, text="OK", command=mensaje_alerta_screen.destroy).pack()
 

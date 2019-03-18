@@ -36,15 +36,6 @@ def CREATE_CLIENT(new_user, new_code):
     conexion.commit()
     conexion.close()
 
-def CREATE_USER(new_user, new_pass, new_level):
-    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
-    cursor = conexion.cursor()
-
-    cursor.execute("INSERT INTO usuarios (name_user, password, level) VALUES('"+new_user+"', '"+new_pass+"', '"+new_level+"')")
-
-    conexion.commit()
-    conexion.close()
-
 def SEARCH_USER_LOGIN(user_name, user_pass):
     conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
     cursor = conexion.cursor()
@@ -96,6 +87,15 @@ def DELETE_USER(filtro):
     cursor = conexion.cursor()
 
     cursor.execute("DELETE FROM usuarios WHERE id = "+filtro)
+
+    conexion.commit()
+    conexion.close()
+
+def CREATE_USER(new_user, new_pass, new_level):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("INSERT INTO usuarios (name_user, password, level) VALUES('"+new_user+"', '"+new_pass+"', '"+new_level+"')")
 
     conexion.commit()
     conexion.close()

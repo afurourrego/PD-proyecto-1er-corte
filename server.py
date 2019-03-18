@@ -78,5 +78,11 @@ def encargarse_cliente(cliente):
             user_code = cliente.recv(1024).decode("utf-8")
             DB.DELETE_USER(user_code)
 
+        if opcion == "crear_usuario":
+            print("crear usuario")
+            user_new =  cliente.recv(1024)
+            user_new = pickle.loads(user_new)
+            DB.CREATE_USER(user_new[0], user_new[1], user_new[2])
+
 if __name__ == "__main__":
     configuracion()
