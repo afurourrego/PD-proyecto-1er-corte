@@ -6,8 +6,8 @@ from tkinter import messagebox
 import tkinter.ttk as ttk
 
 #==============================INITIALIZACION===================================
+
 def configuracion():
-    # interfaz()
     account_screen()
 
     global cliente_socket
@@ -16,51 +16,6 @@ def configuracion():
     # recibir_hilo = Thread(target=recibir)
     # recibir_hilo.start()
     mainloop()
-
-
-
-    # global mi_mensaje, ventana, mensaje_lista
-    # ventana = Tk()
-    # ventana.title("Messenger")
-    # frame = Frame(ventana)
-    # mi_mensaje = StringVar()
-    # mi_mensaje.set("")
-    # scroll = Scrollbar(frame)
-    # mensaje_lista = Listbox(frame, height=30, width=100, yscrollcommand=scroll.set)
-    # scroll.pack(side=RIGHT, fill=Y)
-    # mensaje_lista.pack(side=LEFT, fill=BOTH)
-    # mensaje_lista.pack()
-    # frame.pack()
-    # campo_entrada = Entry(ventana,textvariable=mi_mensaje)
-    # campo_entrada.bind("<Return>",enviar)
-    # campo_entrada.pack()
-    # boton_envio = Button(ventana,text="Enviar",command=enviar)
-    # boton_envio.pack()
-    # ventana.protocol("WM_DELETE_WINDOW", cerrando)
-
-
-#==============================COMUNICACION SERVER==============================
-# def recibir():
-#     while True:
-#         try:
-#             mensaje = cliente_socket.recv(1024).decode("utf-8")
-#             mensaje_lista.insert(END,mensaje)
-#             mensaje_lista.see(END)
-#         except OSError:
-#             break
-#
-# def enviar(event=None):
-#     mensaje = mi_mensaje.get()
-#     mi_mensaje.set("")
-#     cliente_socket.send(bytes(mensaje, "utf-8"))
-#     if mensaje == '{salir}':
-#         cliente_socket.close()
-#         ventana.quit()
-#
-# def cerrando(event=None):
-#     mi_mensaje.set("{salir}")
-#     enviar()
-#
 
 #=====================================LOGIN=====================================
 
@@ -82,8 +37,6 @@ def account_screen():
     Label(main_screen, text="El Mercadito", height="2", font=("Calibri", 13)).pack()
     Label(main_screen, text="").pack()
     Button(main_screen, text="Iniciar sesion", height="2", width="30", command = login_formulario).pack()
-    # Label(text="").pack()
-    # Button(text="Registrarse", height="2", width="30", command= registrarse_formulario).pack()
 
 def login_formulario():
     global login_screen
@@ -165,7 +118,6 @@ def login_error(mensaje):
     Label(login_error_screen, textvariable=mensaje_alert).pack()
     Button(login_error_screen, text="OK", command=login_error_screen.destroy).pack()
 
-
 #==================================HOME=========================================
 
 def Home():
@@ -179,7 +131,6 @@ def Home():
     x = (screen_width/2) - (width/2)
     y = (screen_height/2) - (height/2)
     home.geometry("%dx%d+%d+%d" % (width, height, x, y))
-    # home.geometry("1024x520")
     home.resizable(0, 0)
     menubar = Menu(home)
 
@@ -191,26 +142,12 @@ def Home():
 
     if user_data[1] == "administrador":
         menubar.add_command(label="Usuarios", command=manage_users)
-        # menu_usuarios = Menu(menubar, tearoff=0)
-        # # menu_usuarios.add_command(label="Usuarios", command=manage_users)
-        # # menu_usuarios.add_command(label="Manejar")
-        # menubar.add_cascade(label="Usuarios", menu=menu_usuarios, command=manage_users)
 
     if user_data[1] == "inventario" or user_data[1] == "administrador":
         menubar.add_command(label="Inventario")
-        # menu_inventario = Menu(menubar, tearoff=0)
-        # menu_inventario.add_command(label="Agregar Producto")
-        # menu_inventario.add_command(label="Manejar")
-        # # menu_inventario.add_command(label="Add new", command=ShowAddNew)
-        # # menu_inventario.add_command(label="View", command=ShowView)
-        # menubar.add_cascade(label="Inventario", menu=menu_inventario)
 
     if user_data[1] == "cajero" or user_data[1] == "administrador":
         menubar.add_command(label="Caja")
-        # menu_caja = Menu(menubar, tearoff=0)
-        # menu_caja.add_command(label="Agregar Compra")
-        # menu_caja.add_command(label="Manejar")
-        # menubar.add_cascade(label="Caja", menu=menu_caja)
 
     menu_cliente = Menu(menubar, tearoff=0)
     menu_cliente.add_command(label="Agregar Cliente", command=registrar_cliente_formulario)
@@ -357,9 +294,7 @@ def users_formulario():
 
     tree.column('#0', stretch=NO, minwidth=0, width=0)
     tree.column('#1', stretch=NO, minwidth=0, width=60)
-    # tree.column('#2', stretch=NO, minwidth=0, width=200)
-    # tree.column('#3', stretch=NO, minwidth=0, width=120)
-    # tree.column('#4', stretch=NO, minwidth=0, width=120)
+
     tree.pack()
     listar_usuarios()
 
@@ -372,12 +307,7 @@ def listar_usuarios():
     for user in users_list:
         if user[0] != 1:
             tree.insert('', 'end', values=(user))
-    # cursor.execute("SELECT * FROM `product`")
-    # fetch = cursor.fetchall()
-    # for data in fetch:
-    #     tree.insert('', 'end', values=(data))
-    # cursor.close()
-    # conn.close()
+
 
 
 #=================================menu clientes=================================
@@ -421,11 +351,8 @@ def register_client():
     #INSERT
     cliente_socket.send(data_string)
 
-    # username_entry.delete(0, END)
-    # passworsd_entry.delete(0, END)
-
     register_screen.destroy()
-    #refactorizar
+
     mensajes_alerta("Registro Exitoso")
 
 #===============================alert info======================================
