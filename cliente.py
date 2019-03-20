@@ -214,7 +214,6 @@ def editar_cuenta():
 
     if password_info == repeat_password_info:
         cliente_socket.send(bytes("editar", "utf-8"))
-
         user_info = [username_info, password_info]
         data_string = pickle.dumps(user_info)
         #INSERT
@@ -286,7 +285,10 @@ def users_formulario():
     btn_add_new = Button(users_menu_left, text="Agregar", command=add_user_form)
     btn_add_new.pack(side=TOP, padx=30, pady=10, fill=X)
 
-    btn_delete = Button(users_menu_left, text="Eliminar", command= lambda: Delete("usuario"))
+    btn_edit_new = Button(users_menu_left, text="Editar", command=edit_user_form)
+    btn_edit_new.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_delete = Button(users_menu_left, text="Eliminar", command= lambda: delete_users("usuario"))
     btn_delete.pack(side=TOP, padx=30, pady=10, fill=X)
 
     scrollbarx = Scrollbar(box_users_list, orient=HORIZONTAL)
@@ -323,7 +325,7 @@ def reset_users():
     listar_usuarios()
     SEARCH.set("")
 
-def Delete(filtro):
+def delete_users(filtro):
     if not tree.selection():
        print("ERROR")
     else:
@@ -411,6 +413,81 @@ def search_users(filtro):
             if user[0] != 1:
                 tree.insert('', 'end', values=(user))
 
+def edit_user_form():
+    if not tree.selection():
+       print("ERROR")
+    else:
+        global editar_cuenta_screen
+        editar_cuenta_screen = Toplevel(home)
+        editar_cuenta_screen.title("Editar usuario")
+
+        width = 300
+        height = 250
+        screen_width = home.winfo_screenwidth()
+        screen_height = home.winfo_screenheight()
+        x = (screen_width/2) - (width/2)
+        y = (screen_height/2) - (height/2)
+        editar_cuenta_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+        editar_cuenta_screen.resizable(0, 0)
+
+        global code_user
+        global username
+        global password
+        global repeat_password
+        global username_entry
+        global password_entry
+        global repeat_password_entry
+
+        code_user = StringVar()
+        username = StringVar()
+        password = StringVar()
+        repeat_password = StringVar()
+
+        select = tree.focus()
+        content_select = (tree.item(select))
+        select_values = content_select['values']
+        code_user.set(select_values[0])
+        username.set(select_values[1])
+
+        Label(editar_cuenta_screen, height="2").pack()
+        username_label = Label(editar_cuenta_screen, text="Nombre * ")
+        username_label.pack()
+        username_entry = Entry(editar_cuenta_screen, textvariable=username)
+        username_entry.pack()
+
+        password_label = Label(editar_cuenta_screen, text="Nueva Contraseña ")
+        password_label.pack()
+        password_entry = Entry(editar_cuenta_screen, textvariable=password, show="*")
+        password_entry.pack()
+
+        repeat_password_label = Label(editar_cuenta_screen, text="Repetir nueva Contraseña ")
+        repeat_password_label.pack()
+        repeat_password_entry = Entry(editar_cuenta_screen, textvariable=repeat_password, show="*")
+        repeat_password_entry.pack()
+
+        Label(editar_cuenta_screen, text="").pack()
+        Button(editar_cuenta_screen, text="Editar usuario", width=10, height=1, command =edit_user).pack()
+
+def edit_user():
+    code_info = code_user.get()
+    username_info = username.get()
+    password_info = password.get()
+    repeat_password_info = repeat_password.get()
+
+    if password_info == repeat_password_info:
+        cliente_socket.send(bytes("editar_usuario", "utf-8"))
+
+        user_info = [code_info, username_info, password_info]
+        data_string = pickle.dumps(user_info)
+        #INSERT
+        cliente_socket.send(data_string)
+
+        editar_cuenta_screen.destroy()
+        mensajes_alerta("Actualizacion exitosa")
+        reset_users()
+    else:
+        mensajes_alerta("La contraseña no es igual")
+
 #==============================menu inventario==================================
 
 def manage_inventario():
@@ -453,7 +530,7 @@ def inventario_formulario():
     btn_search = Button(inventario_menu_left, text="Buscar", command= lambda: Search("productos"))
     btn_search.pack(side=TOP, padx=30, pady=10, fill=X)
 
-    btn_reset = Button(inventario_menu_left, text="Reset", command=Reset)
+    btn_reset = Button(inventario_menu_left, text="Reset", command=reset_productos)
     btn_reset.pack(side=TOP, padx=30, pady=10, fill=X)
 
     btn_add_new = Button(inventario_menu_left, text="Agregar", command=add_producto_form)
@@ -462,7 +539,7 @@ def inventario_formulario():
     btn_edit_new = Button(inventario_menu_left, text="Editar", command=edit_producto_form)
     btn_edit_new.pack(side=TOP, padx=30, pady=10, fill=X)
 
-    btn_delete = Button(inventario_menu_left, text="Eliminar", command= lambda: Delete("producto"))
+    btn_delete = Button(inventario_menu_left, text="Eliminar", command= lambda: delete_producto("producto"))
     btn_delete.pack(side=TOP, padx=30, pady=10, fill=X)
 
     scrollbarx = Scrollbar(box_inventario_list, orient=HORIZONTAL)
@@ -497,12 +574,12 @@ def listar_productos():
     for user in list:
         tree.insert('', 'end', values=(user))
 
-def Reset():
+def reset_productos():
     tree.delete(*tree.get_children())
     listar_productos()
     SEARCH.set("")
 
-def Delete(filtro):
+def delete_producto(filtro):
     if not tree.selection():
        print("ERROR")
     else:
@@ -572,10 +649,9 @@ def add_producto():
     producto_add_screen.destroy()
 
     mensajes_alerta("Registro Exitoso")
-    Reset()
+    reset_productos()
 
 def edit_producto_form():
-
     if not tree.selection():
        print("ERROR")
     else:
@@ -638,6 +714,231 @@ def edit_producto():
     stock_edit = stock.get()
 
     cliente_socket.send(bytes("editar_producto", "utf-8"))
+
+    producto_new_info = [code_producto_edit, producto_edit, precio_edit, stock_edit]
+    data_string = pickle.dumps(producto_new_info)
+    cliente_socket.send(data_string)
+
+    producto_edit_screen.destroy()
+
+    mensajes_alerta("Registro Exitoso")
+    reset_productos()
+
+#================================menu clientes==================================
+
+def manage_clientes():
+    global clientes_form
+    clientes_form = Toplevel()
+    clientes_form.title("CLIENTES")
+
+    width = 600
+    height = 400
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    clientes_form.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    clientes_form.resizable(0, 0)
+    clientes_formulario()
+
+def clientes_formulario():
+    global tree
+    global SEARCH
+    SEARCH = StringVar()
+
+    clientes_header = Frame(clientes_form, width=600, bd=0, relief=SOLID)
+    clientes_header.pack(side=TOP, fill=X)
+
+    label_clientes_header = Label(clientes_header, text="CLIENTES", font=('arial', 18), width=600)
+    label_clientes_header.pack(fill=X)
+
+    clientes_menu_left = Frame(clientes_form, width=600)
+    clientes_menu_left.pack(side=LEFT, fill=Y)
+
+    box_clientes_list = Frame(clientes_form, width=600)
+    box_clientes_list.pack(side=RIGHT)
+
+    label_clientes_search = Label(clientes_menu_left, text="Buscar", font=('arial', 12))
+    label_clientes_search.pack(side=TOP, padx=27, anchor=W)
+    search = Entry(clientes_menu_left, textvariable=SEARCH, font=('arial', 12), width=10)
+    search.pack(side=TOP, padx=30, fill=X)
+
+    btn_search = Button(clientes_menu_left, text="Buscar", command= lambda: Search("clientes"))
+    btn_search.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_reset = Button(clientes_menu_left, text="Reset", command=Reset)
+    btn_reset.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_add_new = Button(clientes_menu_left, text="Agregar", command=add_cliente_form)
+    btn_add_new.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_edit_new = Button(clientes_menu_left, text="Editar", command=edit_cliente_form)
+    btn_edit_new.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    btn_delete = Button(clientes_menu_left, text="Eliminar", command= lambda: delete_cliente("cliente"))
+    btn_delete.pack(side=TOP, padx=30, pady=10, fill=X)
+
+    scrollbarx = Scrollbar(box_clientes_list, orient=HORIZONTAL)
+    scrollbary = Scrollbar(box_clientes_list, orient=VERTICAL)
+
+    tree = ttk.Treeview(box_clientes_list, columns=("Nombre", "Cedula"), selectmode="extended", height=100, yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+
+    scrollbary.config(command=tree.yview)
+    scrollbary.pack(side=RIGHT, fill=Y)
+    scrollbarx.config(command=tree.xview)
+    scrollbarx.pack(side=BOTTOM, fill=X)
+
+    tree.heading('Nombre', text="Nombre",anchor=W)
+    tree.heading('Cedula', text="Cedula",anchor=W)
+
+    tree.column('#0', stretch=NO, minwidth=0, width=0)
+
+    tree.pack()
+    listar_clientes()
+
+def listar_clientes():
+    cliente_socket.send(bytes("listar_clientes", "utf-8"))
+
+    list = cliente_socket.recv(1024)
+    list = pickle.loads(list)
+    for user in list:
+        tree.insert('', 'end', values=(user))
+
+def Reset():
+    tree.delete(*tree.get_children())
+    listar_clientes()
+    SEARCH.set("")
+
+def delete_cliente(filtro):
+    if not tree.selection():
+       print("ERROR")
+    else:
+        result = messagebox.askquestion("info", '¿Esta seguro de eliminar?', icon="warning")
+        if result == 'yes':
+            cliente_socket.send(bytes("eliminar_"+filtro, "utf-8"))
+
+            select = tree.focus()
+            content_select = (tree.item(select))
+            select_values = content_select['values']
+
+            cliente_socket.send(bytes(str(select_values[0]), "utf-8"))
+            manage_clientes()
+
+def add_cliente_form():
+    global register_screen
+    register_screen = Toplevel(home)
+    register_screen.title("Formulario de Registro")
+
+    width = 300
+    height = 250
+    screen_width = home.winfo_screenwidth()
+    screen_height = home.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    register_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    register_screen.resizable(0, 0)
+
+    global client
+    global cedula
+    global client_entry
+    global cedula_entry
+    client = StringVar()
+    cedula = StringVar()
+
+    Label(register_screen, height="2").pack()
+    client_label = Label(register_screen, text="Nombre * ")
+    client_label.pack()
+    client_entry = Entry(register_screen, textvariable=client)
+    client_entry.pack()
+
+    cedula_label = Label(register_screen, text="Cedula * ")
+    cedula_label.pack()
+    cedula_entry = Entry(register_screen, textvariable=cedula, show="*")
+    cedula_entry.pack()
+
+    Label(register_screen, text="").pack()
+    Button(register_screen, text="Crear cliente", width=10, height=1, command = register_client).pack()
+
+def add_cliente():
+    client_info = client.get()
+    cedula_info = cedula.get()
+
+    cliente_socket.send(bytes("registrar", "utf-8"))
+
+    client_info = [client_info, cedula_info]
+    data_string = pickle.dumps(client_info)
+
+    #INSERT
+    cliente_socket.send(data_string)
+
+    register_screen.destroy()
+
+    mensajes_alerta("Registro Exitoso")
+
+def edit_cliente_form():
+
+    if not tree.selection():
+       print("ERROR")
+    else:
+        global producto_edit_screen
+        producto_edit_screen = Toplevel(home)
+        producto_edit_screen.title("Formulario de Registro")
+
+        width = 300
+        height = 250
+        screen_width = home.winfo_screenwidth()
+        screen_height = home.winfo_screenheight()
+        x = (screen_width/2) - (width/2)
+        y = (screen_height/2) - (height/2)
+        producto_edit_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+        producto_edit_screen.resizable(0, 0)
+
+        global code_producto
+        global productoname
+        global precio
+        global stock
+        global productoname_entry
+        global precio_entry
+        global stock_entry
+
+        code_producto = StringVar()
+        productoname = StringVar()
+        precio = StringVar()
+        stock = StringVar()
+
+        select = tree.focus()
+        content_select = (tree.item(select))
+        select_values = content_select['values']
+
+        code_producto.set(select_values[0])
+        productoname.set(select_values[1])
+        precio.set(select_values[2])
+        stock.set(select_values[3])
+
+        Label (producto_edit_screen, height="2").pack()
+        productoname_label = Label(producto_edit_screen, text="Nombre * ")
+        productoname_label.pack()
+        productoname_entry = Entry(producto_edit_screen, textvariable=productoname)
+        productoname_entry.pack()
+        precio_label = Label(producto_edit_screen, text="Precio * ")
+        precio_label.pack()
+        precio_entry = Entry(producto_edit_screen, textvariable=precio)
+        precio_entry.pack()
+        stock_label = Label(producto_edit_screen, text="Stock * ")
+        stock_label.pack()
+        stock_entry = Entry(producto_edit_screen, textvariable=stock)
+        stock_entry.pack()
+
+        Label (producto_edit_screen, height="1").pack()
+        Button(producto_edit_screen, text="Editar producto", width=12, height=1, command = edit_producto).pack()
+
+def edit_cliente():
+    code_producto_edit = code_producto.get()
+    producto_edit = productoname.get()
+    precio_edit = precio.get()
+    stock_edit = stock.get()
+
+    cliente_socket.send(bytes("editar_producto", "utf-8"))
     producto_new_info = [code_producto_edit, producto_edit, precio_edit, stock_edit]
     data_string = pickle.dumps(producto_new_info)
     cliente_socket.send(data_string)
@@ -646,7 +947,6 @@ def edit_producto():
 
     mensajes_alerta("Registro Exitoso")
     Reset()
-
 
 #============================funciones generales================================
 

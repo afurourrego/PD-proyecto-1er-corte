@@ -20,18 +20,9 @@ def CREATE_TABLES():
     cursor.execute("CREATE TABLE IF NOT EXISTS ventas (id INT AUTO_INCREMENT PRIMARY KEY, date TIMESTAMP, nombre_product VARCHAR(255), cantidad INT(3), price INT(10), name_user VARCHAR(255))")
     cursor.execute("CREATE TABLE IF NOT EXISTS caja (id INT AUTO_INCREMENT PRIMARY KEY, date TIMESTAMP, saldo INT(10))")
 
-    cursor.execute("SELECT * FROM usuarios WHERE name_user = 'admin' AND id = 1")
+    cursor.execute("SELECT * FROM usuarios WHERE id = 1 AND level = 'administrador'")
     if cursor.fetchone() is None:
         cursor.execute("INSERT INTO usuarios (name_user, password, level) VALUES('admin', 'admin', 'administrador')")
-
-    conexion.commit()
-    conexion.close()
-
-def CREATE_CLIENT(new_user, new_code):
-    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
-    cursor = conexion.cursor()
-
-    cursor.execute("INSERT INTO clientes (name_client, code) VALUES('"+new_user+"', '"+new_code+"')")
 
     conexion.commit()
     conexion.close()
@@ -48,11 +39,11 @@ def SEARCH_USER_LOGIN(user_name, user_pass):
 
     return result
 
-def UPDATE_USER(user_name, user_pass): #corregir, no hay where
+def UPDATE_CUENTA(user_code, user_name, user_pass):
     conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
     cursor = conexion.cursor()
 
-    cursor.execute("UPDATE usuarios SET name_user = '"+user_name+"', password = '"+user_pass+"'")
+    cursor.execute("UPDATE usuarios SET name_user = '"+user_name+"', password = '"+user_pass+"' WHERE id = "+str(user_code))
 
     conexion.commit()
     conexion.close()
@@ -99,6 +90,16 @@ def CREATE_USER(new_user, new_pass, new_level):
 
     conexion.commit()
     conexion.close()
+
+def UPDATE_USER(user_code, user_name, user_pass):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("UPDATE usuarios SET name_user = '"+user_name+"', password = '"+user_pass+"' WHERE id = "+user_code)
+
+    conexion.commit()
+    conexion.close()
+
 
 def SELECT_PRODUCTOS():
     conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
@@ -148,6 +149,59 @@ def UPDATE_PRODUCTO(producto_code, producto_name, producto_price, producto_stock
     cursor = conexion.cursor()
 
     cursor.execute("UPDATE productos SET name_product = '"+producto_name+"', price = '"+producto_price+"', stock = '"+producto_stock+"' WHERE id = '"+producto_code+"'")
+
+    conexion.commit()
+    conexion.close()
+
+
+def SELECT_CLIENTES():
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT * FROM clientes")
+    result = cursor.fetchall()
+
+    conexion.commit()
+    conexion.close()
+
+    return result
+
+def SELECT_CLIENTES_FILTER(filtro):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT * FROM clientes WHERE name_client LIKE '%"+filtro+"%' OR code LIKE '%"+filtro+"%'")
+
+    result = cursor.fetchall()
+
+    conexion.commit()
+    conexion.close()
+
+    return result
+
+def DELETE_CLIENTE(code):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("DELETE FROM clientes WHERE id = "+code)
+
+    conexion.commit()
+    conexion.close()
+
+def CREATE_CLIENTE(new_client, new_code):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("INSERT INTO clientes (name_client, code) VALUES('"+new_client+"', '"+new_code+"')")
+
+    conexion.commit()
+    conexion.close()
+
+def UPDATE_CLIENTE(new_client, new_code):
+    conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
+    cursor = conexion.cursor()
+
+    cursor.execute("UPDATE clientes SET name_client = '"+new_client+"', code = '"+new_code+"' WHERE id = '"+producto_code+"'")
 
     conexion.commit()
     conexion.close()

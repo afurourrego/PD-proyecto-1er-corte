@@ -30,6 +30,7 @@ def encargarse_cliente(cliente):
     while True:
         opcion = cliente.recv(1024).decode("utf-8")
 
+        #================================LOGIN
         if opcion == 'login':
             print("login")
             user_info =  cliente.recv(1024)
@@ -41,25 +42,23 @@ def encargarse_cliente(cliente):
             else:
                 cliente.send(bytes("exito", "utf-8"))
                 #envia el nombre de usuario y level
+                user_logged = [result[0], result[1], result[2], result[3]]
                 result = [result[1], result[3]]
                 data_string = pickle.dumps(result)
                 cliente.send(data_string)
-
-        if opcion == 'registrar':
-            print("registrar cliente")
-            client_info =  cliente.recv(1024)
-            client_info = pickle.loads(client_info)
-            DB.CREATE_CLIENT(client_info[0], client_info[1])
 
         if opcion == 'editar':
             print("editar")
             user_edit =  cliente.recv(1024)
             user_edit = pickle.loads(user_edit)
             if user_edit[1] == '':
-                DB.UPDATE_USER(user_edit[0], user_info[1])
+                DB.UPDATE_CUENTA(user_logged[0], user_edit[0], user_logged[2])
             else:
-                DB.UPDATE_USER(user_edit[0], user_edit[1])
+                DB.UPDATE_CUENTA(user_logged[0], user_edit[0], user_edit[1])
+                user_logged[2] = user_edit[1]
+            user_logged[1] = user_edit[0]
 
+        #================================USUARIOS
         if opcion == "listar_usuarios":
             print("listar usuarios")
             result = DB.SELECT_USERS()
@@ -84,6 +83,13 @@ def encargarse_cliente(cliente):
             user_new = pickle.loads(user_new)
             DB.CREATE_USER(user_new[0], user_new[1], user_new[2])
 
+        if opcion == 'editar_usuario':
+            print("editar usuario")
+            user_edit =  cliente.recv(1024)
+            user_edit = pickle.loads(user_edit)
+            DB.UPDATE_USER(user_edit[0], user_edit[1], user_edit[2])
+
+        #================================PRODUCTOS
         if opcion == "listar_productos":
             print("listar productos")
             result = DB.SELECT_PRODUCTOS()
@@ -113,6 +119,38 @@ def encargarse_cliente(cliente):
             producto_edit =  cliente.recv(1024)
             producto_edit = pickle.loads(producto_edit)
             DB.UPDATE_PRODUCTO(producto_edit[0], producto_edit[1], producto_edit[2], producto_edit[3])
+
+        #================================CLIENTES
+        if opcion == "listar_clientes":
+            print("listar clientes")
+            result = DB.SELECT_CLIENTES()
+            data_string = pickle.dumps(result)
+            cliente.send(data_string)
+
+        if opcion == "buscar_clientes":
+            print("buscar clientes")
+            filtro = cliente.recv(1024).decode("utf-8")
+            result = DB.SELECT_CLIENTES_FILTER(filtro)
+            data_string = pickle.dumps(result)
+            cliente.send(data_string)
+
+        if opcion == "eliminar_cliente":
+            print("eliminar cliente")
+            cliente_code = cliente.recv(1024).decode("utf-8")
+            DB.DELETE_CLIENTE(cliente_code)
+
+        if opcion == "crear_cliente":
+            print("crear cliente")
+            cliente_new =  cliente.recv(1024)
+            cliente_new = pickle.loads(cliente_new)
+            DB.CREATE_CLIENTE(cliente_new[0], cliente_new[1])
+
+        if opcion == 'editar_cliente':
+            print("editar producto")
+            producto_edit =  cliente.recv(1024)
+            producto_edit = pickle.loads(producto_edit)
+            DB.UPDATE_PRODUCTO(producto_edit[0], producto_edit[1], producto_edit[2], producto_edit[3])
+
 
 if __name__ == "__main__":
     configuracion()
