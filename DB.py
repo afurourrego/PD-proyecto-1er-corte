@@ -16,7 +16,7 @@ def CREATE_TABLES():
 
     cursor.execute("CREATE TABLE IF NOT EXISTS usuarios (id INT AUTO_INCREMENT PRIMARY KEY, name_user VARCHAR(255), password VARCHAR(255), level ENUM('administrador', 'inventario', 'cajero'))")
     cursor.execute("CREATE TABLE IF NOT EXISTS clientes (id INT AUTO_INCREMENT PRIMARY KEY, name_client VARCHAR(255), code VARCHAR(255))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS productos (id INT AUTO_INCREMENT PRIMARY KEY, name_product VARCHAR(255), price INT(10), stock INT(3))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS productos (id INT AUTO_INCREMENT PRIMARY KEY, image_url VARCHAR(255), name_product VARCHAR(255), price INT(10), stock INT(3))")
     cursor.execute("CREATE TABLE IF NOT EXISTS ventas (id INT AUTO_INCREMENT PRIMARY KEY, date TIMESTAMP, nombre_product VARCHAR(255), cantidad INT(3), price INT(10), name_user VARCHAR(255))")
     cursor.execute("CREATE TABLE IF NOT EXISTS caja (id INT AUTO_INCREMENT PRIMARY KEY, date TIMESTAMP, saldo INT(10))")
 
@@ -135,20 +135,20 @@ def DELETE_PRODUCTO(code):
     conexion.commit()
     conexion.close()
 
-def CREATE_PRODUCTO(new_producto, new_precio, new_stock):
+def CREATE_PRODUCTO(new_image, new_producto, new_precio, new_stock):
     conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
     cursor = conexion.cursor()
 
-    cursor.execute("INSERT INTO productos (name_product, price, stock) VALUES('"+new_producto+"', '"+new_precio+"', '"+new_stock+"')")
+    cursor.execute("INSERT INTO productos (image_url, name_product, price, stock) VALUES('"+new_image+"', '"+new_producto+"', '"+new_precio+"', '"+new_stock+"')")
 
     conexion.commit()
     conexion.close()
 
-def UPDATE_PRODUCTO(producto_code, producto_name, producto_price, producto_stock):
+def UPDATE_PRODUCTO(producto_code, producto_image, producto_name, producto_price, producto_stock):
     conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
     cursor = conexion.cursor()
 
-    cursor.execute("UPDATE productos SET name_product = '"+producto_name+"', price = '"+producto_price+"', stock = '"+producto_stock+"' WHERE id = '"+producto_code+"'")
+    cursor.execute("UPDATE productos SET image_url = '"+producto_image+"', name_product = '"+producto_name+"', price = '"+producto_price+"', stock = '"+producto_stock+"' WHERE id = '"+producto_code+"'")
 
     conexion.commit()
     conexion.close()
@@ -197,11 +197,11 @@ def CREATE_CLIENTE(new_client, new_code):
     conexion.commit()
     conexion.close()
 
-def UPDATE_CLIENTE(new_client, new_code):
+def UPDATE_CLIENTE(id_client, edit_client, edit_code):
     conexion = mysql.connector.connect( host="localhost", user="root", passwd="", database=nombre_db)
     cursor = conexion.cursor()
 
-    cursor.execute("UPDATE clientes SET name_client = '"+new_client+"', code = '"+new_code+"' WHERE id = '"+producto_code+"'")
+    cursor.execute("UPDATE clientes SET name_client = '"+edit_client+"', code = '"+edit_code+"' WHERE id = '"+id_client+"'")
 
     conexion.commit()
     conexion.close()

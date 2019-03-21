@@ -149,11 +149,12 @@ def Home():
 
     if user_data[1] == "cajero" or user_data[1] == "administrador":
         menubar.add_command(label="Caja")
+        menubar.add_command(label="Clientes", command=manage_clientes)
 
-    menu_cliente = Menu(menubar, tearoff=0)
-    menu_cliente.add_command(label="Agregar Cliente", command=registrar_cliente_formulario)
-    menu_cliente.add_command(label="Manejar")
-    menubar.add_cascade(label="Clientes", menu=menu_cliente)
+    # menu_cliente = Menu(menubar, tearoff=0)
+    # menu_cliente.add_command(label="Agregar Cliente", command=registrar_cliente_formulario)
+    # menu_cliente.add_command(label="Manejar")
+    # menubar.add_cascade(label="Clientes", menu=menu_cliente)
 
     home.config(menu=menubar)
 
@@ -545,7 +546,7 @@ def inventario_formulario():
     scrollbarx = Scrollbar(box_inventario_list, orient=HORIZONTAL)
     scrollbary = Scrollbar(box_inventario_list, orient=VERTICAL)
 
-    tree = ttk.Treeview(box_inventario_list, columns=("Codigo", "Nombre", "Precio Un.", "Stock"), selectmode="extended", height=100, yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+    tree = ttk.Treeview(box_inventario_list, columns=("Codigo", "Imagen", "Nombre", "Precio Un.", "Stock"), selectmode="extended", height=100, yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
 
     scrollbary.config(command=tree.yview)
     scrollbary.pack(side=RIGHT, fill=Y)
@@ -553,15 +554,17 @@ def inventario_formulario():
     scrollbarx.pack(side=BOTTOM, fill=X)
 
     tree.heading('Codigo', text="Codigo",anchor=W)
+    tree.heading('Imagen', text="Imagen",anchor=W)
     tree.heading('Nombre', text="Nombre",anchor=W)
     tree.heading('Precio Un.', text="Precio Un.",anchor=W)
     tree.heading('Stock', text="Stock",anchor=W)
 
     tree.column('#0', stretch=NO, minwidth=0, width=0)
     tree.column('#1', stretch=NO, minwidth=0, width=60)
-    tree.column('#2', stretch=NO, minwidth=0, width=150)
-    tree.column('#3', stretch=NO, minwidth=0, width=120)
-    tree.column('#4', stretch=NO, minwidth=0, width=60)
+    tree.column('#2', stretch=NO, minwidth=0, width=60)
+    tree.column('#3', stretch=NO, minwidth=0, width=150)
+    tree.column('#4', stretch=NO, minwidth=0, width=120)
+    tree.column('#5', stretch=NO, minwidth=0, width=60)
 
     tree.pack()
     listar_productos()
@@ -572,7 +575,14 @@ def listar_productos():
     list = cliente_socket.recv(1024)
     list = pickle.loads(list)
     for user in list:
-        tree.insert('', 'end', values=(user))
+        # tree.insert('', 'end', values=(user))
+
+        # self._img = tk.PhotoImage(file="imagename.gif") #change to your file path
+        # self.tree.insert('', 'end', text="#0's text", image=self._img,
+        #                  value=("A's value", "B's value"))
+
+        img = PhotoImage(file='/amwa.jpg') #change to your file path
+        tree.insert('', 'end', image=img, values=(user[0], image, user[2], user[3], user[4],))
 
 def reset_productos():
     tree.delete(*tree.get_children())
@@ -611,15 +621,18 @@ def add_producto_form():
     global productoname
     global precio
     global stock
+    global image_url
     global productoname_entry
     global precio_entry
     global stock_entry
+    global image_url_entry
 
     productoname = StringVar()
     precio = StringVar()
     stock = StringVar()
+    image_url = StringVar()
 
-    Label (producto_add_screen, height="2").pack()
+    Label (producto_add_screen, height="1").pack()
     productoname_label = Label(producto_add_screen, text="Nombre * ")
     productoname_label.pack()
     productoname_entry = Entry(producto_add_screen, textvariable=productoname)
@@ -632,6 +645,10 @@ def add_producto_form():
     stock_label.pack()
     stock_entry = Entry(producto_add_screen, textvariable=stock)
     stock_entry.pack()
+    image_url_label = Label(producto_add_screen, text="imagen URL * ")
+    image_url_label.pack()
+    image_url_entry = Entry(producto_add_screen, textvariable=image_url)
+    image_url_entry.pack()
 
     Label (producto_add_screen, height="1").pack()
     Button(producto_add_screen, text="Crear producto", width=12, height=1, command = add_producto).pack()
@@ -640,9 +657,10 @@ def add_producto():
     producto_new = productoname.get()
     precio_new = precio.get()
     stock_new = stock.get()
+    image_url_new = image_url.get()
 
     cliente_socket.send(bytes("crear_producto", "utf-8"))
-    producto_new_info = [producto_new, precio_new, stock_new]
+    producto_new_info = [image_url_new, producto_new, precio_new, stock_new]
     data_string = pickle.dumps(producto_new_info)
     cliente_socket.send(data_string)
 
@@ -672,25 +690,29 @@ def edit_producto_form():
         global productoname
         global precio
         global stock
+        global image_url
         global productoname_entry
         global precio_entry
         global stock_entry
+        global image_url_entry
 
         code_producto = StringVar()
         productoname = StringVar()
         precio = StringVar()
         stock = StringVar()
+        image_url = StringVar()
 
         select = tree.focus()
         content_select = (tree.item(select))
         select_values = content_select['values']
 
         code_producto.set(select_values[0])
-        productoname.set(select_values[1])
-        precio.set(select_values[2])
-        stock.set(select_values[3])
+        image_url.set(select_values[1])
+        productoname.set(select_values[2])
+        precio.set(select_values[3])
+        stock.set(select_values[4])
 
-        Label (producto_edit_screen, height="2").pack()
+        Label (producto_edit_screen, height="1").pack()
         productoname_label = Label(producto_edit_screen, text="Nombre * ")
         productoname_label.pack()
         productoname_entry = Entry(producto_edit_screen, textvariable=productoname)
@@ -703,6 +725,10 @@ def edit_producto_form():
         stock_label.pack()
         stock_entry = Entry(producto_edit_screen, textvariable=stock)
         stock_entry.pack()
+        image_url_label = Label(producto_edit_screen, text="imagen URL * ")
+        image_url_label.pack()
+        image_url_entry = Entry(producto_edit_screen, textvariable=image_url)
+        image_url_entry.pack()
 
         Label (producto_edit_screen, height="1").pack()
         Button(producto_edit_screen, text="Editar producto", width=12, height=1, command = edit_producto).pack()
@@ -712,10 +738,11 @@ def edit_producto():
     producto_edit = productoname.get()
     precio_edit = precio.get()
     stock_edit = stock.get()
+    image_url_edit = image_url.get()
 
     cliente_socket.send(bytes("editar_producto", "utf-8"))
 
-    producto_new_info = [code_producto_edit, producto_edit, precio_edit, stock_edit]
+    producto_new_info = [code_producto_edit, image_url_edit, producto_edit, precio_edit, stock_edit]
     data_string = pickle.dumps(producto_new_info)
     cliente_socket.send(data_string)
 
@@ -781,17 +808,19 @@ def clientes_formulario():
     scrollbarx = Scrollbar(box_clientes_list, orient=HORIZONTAL)
     scrollbary = Scrollbar(box_clientes_list, orient=VERTICAL)
 
-    tree = ttk.Treeview(box_clientes_list, columns=("Nombre", "Cedula"), selectmode="extended", height=100, yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+    tree = ttk.Treeview(box_clientes_list, columns=("Code","Nombre", "Cedula"), selectmode="extended", height=100, yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
 
     scrollbary.config(command=tree.yview)
     scrollbary.pack(side=RIGHT, fill=Y)
     scrollbarx.config(command=tree.xview)
     scrollbarx.pack(side=BOTTOM, fill=X)
 
+    tree.heading('Code', text="Code",anchor=W)
     tree.heading('Nombre', text="Nombre",anchor=W)
     tree.heading('Cedula', text="Cedula",anchor=W)
 
     tree.column('#0', stretch=NO, minwidth=0, width=0)
+    tree.column('#1', stretch=NO, minwidth=0, width=60)
 
     tree.pack()
     listar_clientes()
@@ -853,36 +882,35 @@ def add_cliente_form():
 
     cedula_label = Label(register_screen, text="Cedula * ")
     cedula_label.pack()
-    cedula_entry = Entry(register_screen, textvariable=cedula, show="*")
+    cedula_entry = Entry(register_screen, textvariable=cedula)
     cedula_entry.pack()
 
     Label(register_screen, text="").pack()
-    Button(register_screen, text="Crear cliente", width=10, height=1, command = register_client).pack()
+    Button(register_screen, text="Crear cliente", width=10, height=1, command = add_cliente).pack()
 
 def add_cliente():
     client_info = client.get()
     cedula_info = cedula.get()
 
-    cliente_socket.send(bytes("registrar", "utf-8"))
+    cliente_socket.send(bytes("crear_cliente", "utf-8"))
 
     client_info = [client_info, cedula_info]
     data_string = pickle.dumps(client_info)
-
-    #INSERT
     cliente_socket.send(data_string)
 
     register_screen.destroy()
 
     mensajes_alerta("Registro Exitoso")
+    Reset()
 
 def edit_cliente_form():
 
     if not tree.selection():
        print("ERROR")
     else:
-        global producto_edit_screen
-        producto_edit_screen = Toplevel(home)
-        producto_edit_screen.title("Formulario de Registro")
+        global cliente_edit_screen
+        cliente_edit_screen = Toplevel(home)
+        cliente_edit_screen.title("Formulario de Registro")
 
         width = 300
         height = 250
@@ -890,60 +918,51 @@ def edit_cliente_form():
         screen_height = home.winfo_screenheight()
         x = (screen_width/2) - (width/2)
         y = (screen_height/2) - (height/2)
-        producto_edit_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
-        producto_edit_screen.resizable(0, 0)
+        cliente_edit_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
+        cliente_edit_screen.resizable(0, 0)
 
-        global code_producto
-        global productoname
-        global precio
-        global stock
-        global productoname_entry
-        global precio_entry
-        global stock_entry
+        global code_cliente
+        global name_cliente
+        global cedula_cliente
+        global name_cliente_entry
+        global cedula_cliente_entry
 
-        code_producto = StringVar()
-        productoname = StringVar()
-        precio = StringVar()
-        stock = StringVar()
+        code_cliente = StringVar()
+        name_cliente = StringVar()
+        cedula_cliente = StringVar()
 
         select = tree.focus()
         content_select = (tree.item(select))
         select_values = content_select['values']
 
-        code_producto.set(select_values[0])
-        productoname.set(select_values[1])
-        precio.set(select_values[2])
-        stock.set(select_values[3])
+        code_cliente.set(select_values[0])
+        name_cliente.set(select_values[1])
+        cedula_cliente.set(select_values[2])
 
-        Label (producto_edit_screen, height="2").pack()
-        productoname_label = Label(producto_edit_screen, text="Nombre * ")
-        productoname_label.pack()
-        productoname_entry = Entry(producto_edit_screen, textvariable=productoname)
-        productoname_entry.pack()
-        precio_label = Label(producto_edit_screen, text="Precio * ")
-        precio_label.pack()
-        precio_entry = Entry(producto_edit_screen, textvariable=precio)
-        precio_entry.pack()
-        stock_label = Label(producto_edit_screen, text="Stock * ")
-        stock_label.pack()
-        stock_entry = Entry(producto_edit_screen, textvariable=stock)
-        stock_entry.pack()
+        Label (cliente_edit_screen, height="2").pack()
+        name_cliente_label = Label(cliente_edit_screen, text="Nombre * ")
+        name_cliente_label.pack()
+        name_cliente_entry = Entry(cliente_edit_screen, textvariable=name_cliente)
+        name_cliente_entry.pack()
+        cedula_cliente_label = Label(cliente_edit_screen, text="Cedula * ")
+        cedula_cliente_label.pack()
+        cedula_cliente_entry = Entry(cliente_edit_screen, textvariable=cedula_cliente)
+        cedula_cliente_entry.pack()
 
-        Label (producto_edit_screen, height="1").pack()
-        Button(producto_edit_screen, text="Editar producto", width=12, height=1, command = edit_producto).pack()
+        Label (cliente_edit_screen, height="1").pack()
+        Button(cliente_edit_screen, text="Editar cliente", width=12, height=1, command = edit_cliente).pack()
 
 def edit_cliente():
-    code_producto_edit = code_producto.get()
-    producto_edit = productoname.get()
-    precio_edit = precio.get()
-    stock_edit = stock.get()
+    code_cliente_edit = code_cliente.get()
+    cliente_edit = name_cliente.get()
+    cedula_cliente_edit = cedula_cliente.get()
 
-    cliente_socket.send(bytes("editar_producto", "utf-8"))
-    producto_new_info = [code_producto_edit, producto_edit, precio_edit, stock_edit]
-    data_string = pickle.dumps(producto_new_info)
+    cliente_socket.send(bytes("editar_cliente", "utf-8"))
+    cliente_edit_info = [code_cliente_edit, cliente_edit, cedula_cliente_edit]
+    data_string = pickle.dumps(cliente_edit_info)
     cliente_socket.send(data_string)
 
-    producto_edit_screen.destroy()
+    cliente_edit_screen.destroy()
 
     mensajes_alerta("Registro Exitoso")
     Reset()
@@ -961,59 +980,6 @@ def Search(filtro):
         for item in list:
             if item[0] != 1:
                 tree.insert('', 'end', values=(item))
-
-#=================================menu clientes=================================
-
-def registrar_cliente_formulario():
-    global register_screen
-    register_screen = Toplevel(home)
-    register_screen.title("Formulario de Registro")
-
-    width = 300
-    height = 250
-    screen_width = home.winfo_screenwidth()
-    screen_height = home.winfo_screenheight()
-    x = (screen_width/2) - (width/2)
-    y = (screen_height/2) - (height/2)
-    register_screen.geometry("%dx%d+%d+%d" % (width, height, x, y))
-    register_screen.resizable(0, 0)
-
-    global client
-    global cedula
-    global client_entry
-    global cedula_entry
-    client = StringVar()
-    cedula = StringVar()
-
-    Label(register_screen, height="2").pack()
-    client_label = Label(register_screen, text="Nombre * ")
-    client_label.pack()
-    client_entry = Entry(register_screen, textvariable=client)
-    client_entry.pack()
-
-    cedula_label = Label(register_screen, text="Cedula * ")
-    cedula_label.pack()
-    cedula_entry = Entry(register_screen, textvariable=cedula, show="*")
-    cedula_entry.pack()
-
-    Label(register_screen, text="").pack()
-    Button(register_screen, text="Crear cliente", width=10, height=1, command = register_client).pack()
-
-def register_client():
-    client_info = client.get()
-    cedula_info = cedula.get()
-
-    cliente_socket.send(bytes("registrar", "utf-8"))
-
-    client_info = [client_info, cedula_info]
-    data_string = pickle.dumps(client_info)
-
-    #INSERT
-    cliente_socket.send(data_string)
-
-    register_screen.destroy()
-
-    mensajes_alerta("Registro Exitoso")
 
 #===============================alert info======================================
 

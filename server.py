@@ -112,13 +112,13 @@ def encargarse_cliente(cliente):
             print("crear producto")
             producto_new =  cliente.recv(1024)
             producto_new = pickle.loads(producto_new)
-            DB.CREATE_PRODUCTO(producto_new[0], producto_new[1], producto_new[2])
+            DB.CREATE_PRODUCTO(producto_new[0], producto_new[1], producto_new[2], producto_new[3])
 
         if opcion == 'editar_producto':
             print("editar producto")
             producto_edit =  cliente.recv(1024)
             producto_edit = pickle.loads(producto_edit)
-            DB.UPDATE_PRODUCTO(producto_edit[0], producto_edit[1], producto_edit[2], producto_edit[3])
+            DB.UPDATE_PRODUCTO(producto_edit[0], producto_edit[1], producto_edit[2], producto_edit[3], producto_edit[4])
 
         #================================CLIENTES
         if opcion == "listar_clientes":
@@ -147,9 +147,9 @@ def encargarse_cliente(cliente):
 
         if opcion == 'editar_cliente':
             print("editar producto")
-            producto_edit =  cliente.recv(1024)
-            producto_edit = pickle.loads(producto_edit)
-            DB.UPDATE_PRODUCTO(producto_edit[0], producto_edit[1], producto_edit[2], producto_edit[3])
+            ciente_edit =  cliente.recv(1024)
+            ciente_edit = pickle.loads(ciente_edit)
+            DB.UPDATE_CLIENTE(ciente_edit[0], ciente_edit[1], ciente_edit[2])
 
 
 if __name__ == "__main__":
